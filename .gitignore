@@ -1,0 +1,18 @@
+# Ignore project-specific files
+Main_React_Application_Deployment.docx
+~$in_React_Application_Deployment.docx
+
+# Ignore development dependencies and artifacts
+node_modules/
+.dockerignore
+.env
+
+# Ignore system files
+.DS_Store
+
+# Ignore shell scripts
+build.sh
+deploy.sh
+
+# Jenkinsfile
+Jenkinsfile
