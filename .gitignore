@@ -10,9 +10,3 @@ node_modules/
 # Ignore system files
 .DS_Store
 
-# Ignore shell scripts
-build.sh
-deploy.sh
-
-# Jenkinsfile
-Jenkinsfile
