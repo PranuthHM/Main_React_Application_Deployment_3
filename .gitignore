@@ -10,5 +10,3 @@ node_modules/
 # Ignore system files
 .DS_Store
 
-# Jenkinsfile
-Jenkinsfile
