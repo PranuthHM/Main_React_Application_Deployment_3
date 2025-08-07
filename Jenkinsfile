@@ -11,7 +11,6 @@ pipeline {
     }
 
     stages {
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -22,36 +21,34 @@ pipeline {
                 }
             }
         }
-
-        stage('Login to Docker Hub') {
+        
+        stage('Login and Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    def current_repo = (env.BRANCH_NAME == 'dev') ? env.DEV_REPO : env.PROD_REPO
-                    def current_tag = "${env.BRANCH_NAME}-${BUILD_NUMBER}"
-                    sh "docker push ${DOCKERHUB_USER}/${current_repo}:${current_tag}"
-                    sh "docker push ${DOCKERHUB_USER}/${current_repo}:latest"
+                    
+                    script {
+                        def current_repo = (env.BRANCH_NAME == 'dev') ? env.DEV_REPO : env.PROD_REPO
+                        def current_tag = "${env.BRANCH_NAME}-${BUILD_NUMBER}"
+                        sh "docker push ${DOCKERHUB_USER}/${current_repo}:${current_tag}"
+                        sh "docker push ${DOCKERHUB_USER}/${current_repo}:latest"
+                    }
                 }
             }
         }
 
         stage('Deploy to Server') {
             steps {
-                script {
-                    def current_repo = (env.BRANCH_NAME == 'dev') ? env.DEV_REPO : env.PROD_REPO
-                    def current_tag = "${env.BRANCH_NAME}-${BUILD_NUMBER}"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        def current_repo = (env.BRANCH_NAME == 'dev') ? env.DEV_REPO : env.PROD_REPO
+                        def current_tag = "${env.BRANCH_NAME}-${BUILD_NUMBER}"
 
-                    sshagent(['ec2-ssh-credentials']) {
-                        sh """
-                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${EC2_HOST} "docker login -u ${DOCKERHUB_USER} -p ${DOCKER_PASS}; docker pull ${DOCKERHUB_USER}/${current_repo}:${current_tag}; docker stop react-app-container || true; docker rm react-app-container || true; docker run -d --name react-app-container -p 80:80 ${DOCKERHUB_USER}/${current_repo}:${current_tag}"
-                        """
+                        sshagent(['ec2-ssh-credentials']) {
+                            sh """
+                            ssh -o StrictHostKeyChecking=no ${SSH_USER}@${EC2_HOST} "docker login -u ${DOCKERHUB_USER} -p ${DOCKER_PASS}; docker pull ${DOCKERHUB_USER}/${current_repo}:${current_tag}; docker stop react-app-container || true; docker rm react-app-container || true; docker run -d --name react-app-container -p 80:80 ${DOCKERHUB_USER}/${current_repo}:${current_tag}"
+                            """
+                        }
                     }
                 }
             }
