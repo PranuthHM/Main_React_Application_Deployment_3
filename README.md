@@ -130,9 +130,9 @@ chmod +x build.sh deploy.sh
 
    Jenkinsfile handles:
 
-      Code checkout
-      Docker build & push
-      Deployment to EC2
+   Code checkout
+    Docker build & push
+    Deployment to EC2
 
   GitHub Webhook triggers builds automatically.
 
@@ -148,6 +148,6 @@ chmod +x build.sh deploy.sh
 
   Collect metrics and visualize on Grafana dashboards.
   
-##🧹 Cleanup
+## 🧹 Cleanup
 docker stop react-app-container && docker rm react-app-container
 docker rmi <image_id>
